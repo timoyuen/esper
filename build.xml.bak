@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="esper" basedir="." default="makeWar">
+    <property name="compileDir" value="WEB-INF/classes">
+    </property>
+
+    <property name="CATALINA_HOME" value="/opt/tomcat">
+    </property>
+    <property name="EXTERNEL_LIB" value="${CATALINA_HOME}/lib/">
+    </property>
+    <target name="tip">
+        <echo>Ant的版本为： ${ant.version}</echo>
+        <echo>Ant Home : ${ant.home}</echo>
+        <echo>JDK的版本为： ${java.runtime.version}</echo>
+        <echo>Java Home : ${java.home}</echo>
+        <echo>--------------------------------------------</echo>
+        <echo>打包的系统目录为： ${basedir}</echo>
+        <echo>系统名称为： ${ant.project.name}</echo>
+        <echo>jar包名称为： ${ant.project.name}.jar</echo>
+        <echo>war包名称为： ${ant.project.name}.war</echo>
+    </target>
+
+    <target name="clean" depends="tip" description="clean jars and classes files first">
+        <delete file="${ant.project.name}.jar">
+        </delete>
+        <delete file="${ant.project.name}.war">
+        </delete>
+        <delete dir="${compileDir}">
+        </delete>
+        <delete file="WEB-INF/lib/${ant.project.name}.jar">
+        </delete>
+    </target>
+
+    <target name="compile" depends="clean" description="系统编译，生成class文件">
+        <mkdir dir="${compileDir}" />
+
+        <javac destdir="${compileDir}" srcdir="src" verbose="true" encoding="UTF-8">
+            <classpath>
+                <fileset dir="WEB-INF/lib">
+                    <include name="**/*.jar" />
+                </fileset>
+                <pathelement path="${EXTERNEL_LIB}/jsp-api.jar" />
+                <pathelement path="${EXTERNEL_LIB}/servlet-api.jar" />
+            </classpath>
+        </javac>
+
+        <copydir dest="${compileDir}" src="src" description="拷贝src文件夹下的内容到dest文件夹下">
+        </copydir>
+    </target>
+
+    <target name="makeJar" depends="compile" description="将系统class文件打成jar包，随后删除原有编译的class文件">
+        <jar destfile="${ant.project.name}.jar" basedir="${compileDir}">
+        </jar>
+        <delete dir="${compileDir}" description="删除appClass文件中的所有内容">
+        </delete>
+    </target>
+
+    <target name="makeWar" depends="makeJar" description="生成war包，可以直接放入Tomcat的webapp目录进行启动">
+        <delete dir="WEB-INF/classes">
+        </delete>
+
+        <copy file="${ant.project.name}.jar" todir="WEB-INF/lib">
+        </copy>
+
+        <war destfile="${ant.project.name}.war" webxml="WEB-INF/web.xml">
+            <lib dir="WEB-INF/lib">
+            </lib>
+            <fileset dir=">
+                <include name="**/*.jsp" />
+                <include name="**/*.htm" />
+                <include name="**/*.html" />
+                <include name="**/*.js" />
+                <include name="**/*.xml" />
+            </fileset>
+            <fileset dir=">
+                <include name="**/*.jif" />
+                <include name="**/*.jpg" />
+            </fileset>
+        </war>
+
+        <copy file="${ant.project.name}.war" todir="${CATALINA_HOME}\webapps">
+        </copy>
+
+        <delete file="WEB-INF/lib/${ant.project.name}.jar">
+        </delete>
+        <delete file="${ant.project.name}.jar">
+        </delete>
+    </target>
+
+    <target name="publish" depends="makeWar" description="将系统源码直接发布到Tomcat服务器下">
+        <echo>开始部署......</echo>
+        <delete dir="${CATALINA_HOME}\webapps\esper">
+        </delete>
+        <copy file="${ant.project.name}.war" todir="${CATALINA_HOME}\webapps">
+        </copy>
+        <echo>已经将源码部署到了 ${CATALINA_HOME}\webapps 目录下</echo>
+    </target>
+
+    <target name="startup" depends="publish" description="启动Tomcat服务器">
+        <echo>系统执行Tomcat服务器启动</echo>
+        <exec executable="cmd" dir="${CATALINA_HOME}/bin" failonerror="true">
+            <env key="CATALINA_HOME" path="${CATALINA_HOME}" />
+            <arg value="/c" />
+            <arg value="startup.sh" />
+        </exec>
+    </target>
+
+    <target name="shutdown" description="关闭Tomcat服务器">
+        <echo>关闭当前正在运行的Tomcat服务器</echo>
+        <exec executable="cmd" dir="${CATALINA_HOME}/bin" failonerror="false">
+            <env key="CATALINA_HOME" path="${CATALINA_HOME}" />
+            <arg value="/c" />
+            <arg value="shutdown.sh" />
+        </exec>
+    </target>
+</project>

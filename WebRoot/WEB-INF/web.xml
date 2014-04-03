@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+  version="3.0"
+  metadata-complete="true">
+
+    <description>
+      esper project for ZU SRTP program
+    </description>
+    <display-name>ZUSRTP-ESPER</display-name>
+<!--
+    <filter>
+        <filter-name>Compression Filter</filter-name>
+        <filter-class>compressionFilters.CompressionFilter</filter-class>
+        <init-param>
+            <param-name>compressionThreshold</param-name>
+            <param-value>128</param-value>
+        </init-param>
+        <init-param>
+            <param-name>compressionBuffer</param-name>
+            <param-value>8192</param-value>
+        </init-param>
+        <init-param>
+            <param-name>compressionMimeTypes</param-name>
+            <param-value>text/html,text/plain,text/xml</param-value>
+        </init-param>
+        <init-param>
+          <param-name>debug</param-name>
+          <param-value>0</param-value>
+        </init-param>
+    </filter> -->
+
+    <!-- Define filter mappings for the timing filters -->
+    <!--
+    <filter-mapping>
+        <filter-name>Timing Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    -->
+
+<!--
+    <filter-mapping>
+      <filter-name>Compression Filter</filter-name>
+      <url-pattern>/CompressionTest</url-pattern>
+    </filter-mapping>
+-->
+
+    <!-- Define example application events listeners -->
+    <listener>
+        <listener-class>esperengine.EsperEngine</listener-class>
+    </listener>
+<!--     <listener>
+        <listener-class>listeners.SessionListener</listener-class>
+    </listener> -->
+
+    <servlet>
+      <servlet-name>UserLogin</servlet-name>
+      <servlet-class>login.UserLogin</servlet-class>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>UserLogin</servlet-name>
+      <url-pattern>/login/*</url-pattern>
+    </servlet-mapping>
+    <servlet>
+      <servlet-name>AdminDashBoard</servlet-name>
+      <servlet-class>admin.Administor</servlet-class>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>AdminDashBoard</servlet-name>
+      <url-pattern>/admin/*</url-pattern>
+    </servlet-mapping>
+    <!-- Async examples -->
+<!--     <servlet>
+      <servlet-name>async0</servlet-name>
+      <servlet-class>async.Async0</servlet-class>
+      <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>async0</servlet-name>
+      <url-pattern>/async/async0</url-pattern>
+    </servlet-mapping>
+ -->
+    <!-- Websocket examples -->
+<!--     <listener>
+        <listener-class>websocket.drawboard.DrawboardContextListener</listener-class>
+    </listener> -->
+
+</web-app>

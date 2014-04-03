@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="esper" basedir="." default="all">
+    <property name="tomcat.home" value="/opt/tomcat" />
+    <property name="servlet-api.jar" value="${tomcat.home}/lib/servlet-api.jar" />
+    <property name="jsp-api.jar"     value="${tomcat.home}/lib/jsp-api.jar" />
+    <property name="distpath.project" value="${tomcat.home}/webapps" />
+
+
+    <property name="project.distname" value="esper" />
+    <property name="dir.src" value="src" />
+    <property name="dir.webinf" value="WebRoot/WEB-INF" />
+    <property name="dir.classes" value="${dir.webinf}/classes" />
+
+
+    <path id="compile.classpath">
+        <pathelement path="${dir.classes}" />
+        <pathelement path="${classpath}" />
+        <pathelement path="${servlet-api.jar}" />
+        <pathelement path="${jsp-api.jar}" />
+        <fileset dir="${dir.webinf}/lib">
+            <include name="*.jar" />
+        </fileset>
+
+    </path>
+
+
+    <target name="prepare">
+        <tstamp />
+    </target>
+
+    <target name="resources">
+            <copy todir="${distpath.project}/${project.distname}" includeEmptyDirs="no">
+                <fileset dir="WebRoot/">
+                    <patternset>
+                        <include name="**/*.*" />
+                    </patternset>
+                </fileset>
+            </copy>
+            <native2ascii src="WebRoot" dest="${distpath.project}/${project.distname}" includes="**/*.properties" encoding="utf-8" />
+     </target>
+
+
+
+    <target name="compile" depends="prepare,resources">
+         <mkdir dir="${distpath.project}/${project.distname}/WEB-INF/classes/"/>
+         <javac srcdir="${dir.src}" destdir="${distpath.project}/${project.distname}/WEB-INF/classes/" encoding="utf-8">
+            <classpath refid="compile.classpath" />
+            <!-- <compilerarg value="-Xlint:unchecked"/> -->
+        </javac>
+    </target>
+
+
+    <target name="clean" description="Prepare for clean build">
+        <delete dir="${distpath.project}/${project.distname}" />
+        <delete dir="${distpath.project}/${project.distname}.war" />
+        <mkdir dir="${dir.classes}" />
+    </target>
+
+
+    <target name="project" depends="clean,prepare,compile" />
+
+
+    <target name="dist" description="Create binary distribution">
+        <war basedir="WebRoot" warfile="${distpath.project}/${project.distname}.war" webxml="${dir.webinf}/web.xml">
+            <exclude name="${distpath.project}/${project.distname}.war" />
+        </war>
+    </target>
+
+    <target name="all" depends="project" />
+</project>
