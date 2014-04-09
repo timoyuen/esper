@@ -50,6 +50,7 @@ public class CrawlerScheduler
 
 	public void start() throws SchedulerException
 	{
+		System.out.println("RUNNING!!!");
 		scheduler.scheduleJob(job, triggerSet, false);
 		scheduler.start();
 	}

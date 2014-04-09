@@ -5,7 +5,7 @@ import java.sql.*;
 public class DataBaseConnection
 {
 	private final String DBDRIVER	= "com.mysql.jdbc.Driver";
-	private final String DBURL		= "jdbc:mysql://127.0.0.1:3306/esper_t";
+	private final String DBURL		= "jdbc:mysql://127.0.0.1:3306/esper_t?characterEncoding=utf8";
 	private final String DBUSER		= "root";
 	private final String DBPASSWORD	= "314159zlc";
 	private Connection conn			= null;

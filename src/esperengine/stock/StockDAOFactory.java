@@ -1,9 +1,14 @@
 package esperengine.stock;
-
 public class StockDAOFactory
 {
-	public static StockDAO getStockDAOInstance()
+	public static StockCodeDAO getStockDAOInstance()
 	{
-		return new StockDAOImpl();
+		return new StockCodeDAOImpl();
+	}
+	public static StockRuleDAO getStockRuleDAOInstance() {
+		return new StockRuleDAOImpl();
+	}
+	public static RuleSubscriptionDAO getRuleSubscriptionDAOInstance() {
+		return new RuleSubscriptionImpl();
 	}
 }

@@ -3,10 +3,12 @@ package esperengine.listener;
 import java.util.Date;
 
 import com.espertech.esper.client.*;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 public class StockListener implements UpdateListener {
 
 	private int pct = 3;
+    static Log log = LogFactory.getLog(StockListener.class);
 
 	public StockListener() {}
 	public StockListener(int percentage) {
@@ -33,10 +35,8 @@ public class StockListener implements UpdateListener {
 //		System.out.println("preTime : " + preTime);
 //		System.out.println("postTime: " + postTime);
 //		System.out.println();
-
-		System.out.println();
-		System.out.println(newData[0].getUnderlying().toString());
-		System.out.println();
+		log.info("hey");
+		// log.info(newData[0].getUnderlying().toString());
 	}
 
 }

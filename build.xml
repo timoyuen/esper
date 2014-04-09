@@ -45,6 +45,7 @@
          <mkdir dir="${distpath.project}/${project.distname}/WEB-INF/classes/"/>
          <javac srcdir="${dir.src}" destdir="${distpath.project}/${project.distname}/WEB-INF/classes/" encoding="utf-8">
             <classpath refid="compile.classpath" />
+             <compilerarg line="-g:source,lines,vars -encoding UTF-8 " />
             <!-- <compilerarg value="-Xlint:unchecked"/> -->
         </javac>
     </target>

@@ -108,40 +108,16 @@ public class PersonVo
 		return flag;
 	}
 
-	public void setErrors(List errors) {
-		this.errors = errors;
-	}
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public void setTelephone(String telephone) {
-		this.telephone = telephone;
-	}
-	public void setPasswordAgain(String passwordAgain) {
-		this.passwordAgain = passwordAgain;
-	}
-	public List getErrors() {
-		return this.errors;
-	}
-	public String getUserName() {
-		return this.userName;
-	}
-	public String getPassword() {
-		return this.password;
-	}
-	public String getEmail() {
-		return this.email;
-	}
-	public String getTelephone() {
-		return this.telephone;
-	}
-	public String getPasswordAgain() {
-		return this.passwordAgain;
-	}
+	public void setErrors(List errors) { this.errors = errors; }
+	public void setUserName(String userName) { this.userName = userName; }
+	public void setPassword(String password) { this.password = password; }
+	public void setEmail(String email) { this.email = email; }
+	public void setTelephone(String telephone) { this.telephone = telephone; }
+	public void setPasswordAgain(String passwordAgain) { this.passwordAgain = passwordAgain; }
+	public List getErrors() { return this.errors; }
+	public String getUserName() { return this.userName; }
+	public String getPassword() { return this.password; }
+	public String getEmail() { return this.email; }
+	public String getTelephone() { return this.telephone; }
+	public String getPasswordAgain() { return this.passwordAgain; }
 }

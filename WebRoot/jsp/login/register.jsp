@@ -13,7 +13,7 @@
 			Iterator iter = all.iterator();
 			while(iter.hasNext()) {
 	%>
-				<li><%=iter.next()%>
+				<li><%=iter.next()%></li>
 	<%
 			}
 		}

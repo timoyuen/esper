@@ -32,7 +32,7 @@ public class UserRegister extends HttpServlet
 			if (PersonDAOFactory.getPersonDAOInstance().isUserExist(pv)) {
 				errors.add("用户重复!");
 			} else {
-				if (PersonDAOFactory.getPersonDAOInstance().newUser(pv) <= 0) {
+				if (!PersonDAOFactory.getPersonDAOInstance().newUser(pv)) {
 					errors.add("插入失败！");
 				} else {
 					errors.add("注册成功");

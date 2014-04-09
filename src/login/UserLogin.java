@@ -9,9 +9,9 @@ public class UserLogin extends HttpServlet
 {
 	private String pathBase = "/jsp/login/";
 	private String defaultLogin = pathBase + "login.jsp";
-	private String successLogin = pathBase + "login_success.jsp";
+	private String loginResult = pathBase + "loginResult.jsp";
 	private String defaultRegister = pathBase + "register.jsp";
-	private String successRegister = pathBase + "register_success.jsp";
+	private String registerResult = pathBase + "registerResult.jsp";
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
 	{
 		String method = request.getParameter("method");
@@ -52,13 +52,16 @@ public class UserLogin extends HttpServlet
 		if(pv.loginValidate()) {
 			if(PersonDAOFactory.getPersonDAOInstance().isLogin(pv)) {
 				// request.setAttribute("name",pv.getName());
-				path = successLogin;
+				path = loginResult;
+				request.setAttribute("result", "SUCCESS");
+				HttpSession session = request.getSession();
+				session.setAttribute("user", pv);
 			} else {
 				errors.add("错误的用户ID及密码！");
+				request.setAttribute("errors", errors);
+				request.setAttribute("person", pv);
 			}
 		}
-		request.setAttribute("errors",errors);
-		request.setAttribute("person",pv);
 		request.getRequestDispatcher(path).forward(request,response);
 	}
 	private void registerPost(HttpServletRequest request,HttpServletResponse response)
@@ -81,7 +84,7 @@ public class UserLogin extends HttpServlet
 			if (PersonDAOFactory.getPersonDAOInstance().isUserExist(pv)) {
 				errors.add("用户重复!");
 			} else {
-				if (PersonDAOFactory.getPersonDAOInstance().newUser(pv) <= 0) {
+				if (!PersonDAOFactory.getPersonDAOInstance().newUser(pv)) {
 					errors.add("插入失败！");
 				} else {
 					errors.add("注册成功");
