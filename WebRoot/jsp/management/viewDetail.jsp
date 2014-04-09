@@ -25,7 +25,6 @@
 				</tr>
 			<%
 			StockRuleVo srv = (StockRuleVo)request.getAttribute("rule");
-			System.out.println(srv);
 			if (srv != null) {
 				List<String> ruleArgsDescription = srv.getRuleArgsDescription();
 				List<String> ruleArgsExample = srv.getRuleArgsExample();
@@ -34,7 +33,7 @@
 					<tr><td><%=description%></td><td><%=ruleArgsExample.get(i)%></td><td><input type="text" name="user_args"></td></tr>
 				<%	i++;
 				 } %>
-				<input type="text" value="${rule.eplId}" name="id">
+				<input type="hidden" value="${rule.eplId}" name="id">
 				<input type="submit" value="submit">
 			<%
 			} else {

@@ -3,33 +3,35 @@ import java.util.*;
 import db.DataBaseAccess;
 import java.sql.*;
 import login.person.*;
-public interface RuleSubscriptionDAOImpl
+public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 {
-	public String getEPLWithSubId(long subId, PersonVo pv) {
-		String sql = "SELECT stock_epl_template.epl_str as epl_str, person.id as userid, "
+	public RuleSubscriptionVo getEPLWithSubId(int subId) {
+		String sql = "SELECT stock_epl_template.epl_str as epl_str, person.id as userid, "+
 					 "person.password as password, person.telephone as telephone, "+
 					 "person.email as email, user_args "+
 					 "FROM rule_subscription, stock_epl_template, person "+
-					 "WHERE rule_subscription.userid=person.id AND "
-					 "rule_subscription.epl_id=stock_epl_template.epl_id AND "
+					 "WHERE rule_subscription.userid=person.id AND "+
+					 "rule_subscription.epl_id=stock_epl_template.epl_id AND "+
 					 "rule_subscription.subscription_id=?";
-		List<Object> args = new ArrayList<String>();
+		List<Object> args = new ArrayList<Object>();
 		args.add(String.valueOf(subId));
 		List<Object> lo = DataBaseAccess.executeQuery(sql, args);
-		String epl = null;
+		RuleSubscriptionVo rule = null;
 		if (lo != null) {
 			try {
-				ResultSet rs = lo.get(0);
+				ResultSet rs = (ResultSet)lo.get(0);
 				if (rs.next()) {
-					epl = rs.getString(epl_str);
-	    			String [] userArgs = (String [])DataBaseAccess.getBlobObj(rs.getBinaryStream("user_args"));
+					String epl = rs.getString("epl_str");
+	    			List<String> userArgs = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("user_args"));
+	    			PersonVo pv = new PersonVo();
 	    			pv.setUserName(rs.getString("userid"));
 	    			pv.setPassword(rs.getString("password"));
 	    			pv.setTelephone(rs.getString("telephone"));
 	    			pv.setEmail(rs.getString("email"));
-					for (String arg : userArgs) {
-						epl = epl.replace("\\?", arg);
-					}
+	    			rule = new RuleSubscriptionVo(String.valueOf(subId), epl, userArgs, pv);
+					// for (String arg : userArgs) {
+					// 	epl = epl.replace("\\?", arg);
+					// }
 				}
 			} catch (Exception e) {
 				System.out.println(e);
@@ -37,32 +39,33 @@ public interface RuleSubscriptionDAOImpl
 				DataBaseAccess.close(lo.get(1));
 			}
 		}
-		return epl;
+		return rule;
 	}
-	public List<String> getAllEPLRules() {
-		String sql = "SELECT stock_epl_template.epl_str as epl_str, person.id as userid, "
+	public List<RuleSubscriptionVo> getAllEPLRules() {
+		String sql = "SELECT stock_epl_template.epl_str as epl_str, person.id as userid, "+
 			 "person.password as password, person.telephone as telephone, "+
-			 "person.email as email, user_args "+
+			 "person.email as email, user_args, subscription_id "+
 			 "FROM rule_subscription, stock_epl_template, person "+
-			 "WHERE rule_subscription.userid=person.id AND "
+			 "WHERE rule_subscription.userid=person.id AND "+
 			 "rule_subscription.epl_id=stock_epl_template.epl_id";
 		List<Object> lo = DataBaseAccess.executeQuery(sql, null);
-		List<String> eplList = null;
+		List<RuleSubscriptionVo> eplList = null;
 		if (lo != null) {
 			try {
-				ResultSet rs = lo.get(0);
-				eplList = new ArrayList<String>();
+				ResultSet rs = (ResultSet)lo.get(0);
+				eplList = new ArrayList<RuleSubscriptionVo>();
 				while (rs.next()) {
-					String epl = rs.getString(epl_str);
-	    			String [] userArgs = (String [])DataBaseAccess.getBlobObj(rs.getBinaryStream("user_args"));
+					String epl = rs.getString("epl_str");
+	    			List<String> userArgs = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("user_args"));
+	    			PersonVo pv = new PersonVo();
 	    			pv.setUserName(rs.getString("userid"));
 	    			pv.setPassword(rs.getString("password"));
 	    			pv.setTelephone(rs.getString("telephone"));
 	    			pv.setEmail(rs.getString("email"));
-					for (String arg : userArgs) {
-						epl = epl.replace("\\?", arg);
-					}
-					eplList.add(epl);
+					// for (String arg : userArgs) {
+					// 	epl = epl.replace("\\?", arg);
+					// }
+					eplList.add(new RuleSubscriptionVo(rs.getString("subscription_id"), epl, userArgs, pv));
 				}
 			} catch (Exception e) {
 				System.out.println(e);

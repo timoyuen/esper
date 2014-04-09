@@ -16,9 +16,14 @@ import db.DataBaseAccess;
 import java.sql.*;
 import java.io.*;
 import login.person.*;
+import helper.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class StockRuleDAOImpl implements StockRuleDAO
 {
 	private static final int itemPerPage = 10;
+    static Log log = LogFactory.getLog(StockRuleDAOImpl.class);
 	public boolean insert(String epl, String ruleDescription,
 	                             String [] argExample, String [] argDescription)
 	{
@@ -28,20 +33,12 @@ public class StockRuleDAOImpl implements StockRuleDAO
 		List<Object> args = new ArrayList<Object>();
 		args.add(epl);
 		args.add(ruleDescription);
-		List<String> argExampleList = getList(argExample);
-		List<String> argDescriptionList = getList(argDescription);
+		List<String> argExampleList = Helper.getList(argExample);
+		List<String> argDescriptionList = Helper.getList(argDescription);
 		args.add(argExampleList);
 		args.add(argDescriptionList);
 		int rs = DataBaseAccess.executeUpdate(sql, args);
 		return rs > 0 ? true: false;
-	}
-
-	private List<String> getList(String [] args) {
-		List<String> argsList = new ArrayList<String>();
-		for (String arg : args) {
-			argsList.add(arg);
-		}
-		return argsList;
 	}
 
 	public int getRulePageCount() {
@@ -119,14 +116,13 @@ public class StockRuleDAOImpl implements StockRuleDAO
 		return ruleContainer;
 	}
 
-	public int insertUserRule(String eplId, String[] args, PersonVo pv) {
-		String sql = "INSERT TO rule_subscription(epl_id, user_args, userid) "+
+	public int insertUserRule(String eplId, String[] userArgs, PersonVo pv) {
+		String sql = "INSERT INTO rule_subscription(epl_id, user_args, userid) "+
 					 "VALUES(?, ?, ?)";
-		List<Object> args = new ArrayList<String>();
-		args.add(epl_id);
-		args.add(args);
-		args.add(pv.getgetUserName());
-		int rs = DataBaseAccess.executeUpdate(sql, args);
-
+		List<Object> args = new ArrayList<Object>();
+		args.add(eplId);
+		args.add(Helper.getList(userArgs));
+		args.add(pv.getUserName());
+		return DataBaseAccess.executeUpdate(sql, args);
 	}
 }

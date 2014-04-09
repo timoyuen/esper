@@ -1,0 +1,2 @@
+EPL template:
+	SELECT $NAME FROM STOCK.win:time(3 sec) WHERE $CODE=?

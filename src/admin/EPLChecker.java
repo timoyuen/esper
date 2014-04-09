@@ -53,7 +53,4 @@ public class EPLChecker
 		}
 		return epl;
     }
-	public static boolean checkSyntax(String epl, String []args) {
-		return CepConfig.isEPLValid(epl, args);
-	}
 }

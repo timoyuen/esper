@@ -10,6 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import esperengine.stock.*;
 import error.*;
 import login.person.*;
+import esperengine.EsperEngine;
+import esperengine.StockEsperInstance;
 public class UserDashBoard extends HttpServlet
 {
     static Log log = LogFactory.getLog(UserDashBoard.class);
@@ -53,6 +55,7 @@ public class UserDashBoard extends HttpServlet
 		} else if (method.equals(methodViewDetail)) {
 			getViewDetail();
 		}
+		return;
 		// boolean valid = getDispatcher(methodViewTemplate, request, response) ||
 		// 				getDispatcher(methodViewRules, request, response) ||
 		// 				getDispatcher(methodViewStockCode, request, response) ||
@@ -73,6 +76,7 @@ public class UserDashBoard extends HttpServlet
 		request.setAttribute("curPage", page);
 		request.setAttribute("ruleList", ls);
 		request.getRequestDispatcher(getFullMethodPath(methodViewTemplate)).forward(request, response);
+		return;
 	}
 
 	private void getViewDetail() throws IOException, ServletException {
@@ -83,11 +87,11 @@ public class UserDashBoard extends HttpServlet
 	}
 	private void checkLogin() throws IOException, ServletException {
 		session = request.getSession();
-		if ((PersonVo)session.getAttribute("user") != null)
-			return true;
-		response.sendRedirect("login");
+		if ((PersonVo)session.getAttribute("user") == null)
+			response.sendRedirect("login");
+		return;
 	}
-	public void doPost(HttpServletRequest request, HttpServletResponse response)
+	public void doPost(HttpServletRequest req, HttpServletResponse res)
 															throws IOException, ServletException
 	{
 		request = req;
@@ -109,7 +113,8 @@ public class UserDashBoard extends HttpServlet
 		StockRuleDAO sd = StockDAOFactory.getStockRuleDAOInstance();
 		int rs = sd.insertUserRule(id, args, (PersonVo)session.getAttribute("user"));
 		if (rs > 0) {
-			EsperEngine.ruleInserted(rs);
+			StockEsperInstance sei = (StockEsperInstance)(EsperEngine.getInstance("Stock"));
+			sei.insertNewSub(rs);
 			request.setAttribute("result", "INSERT DATABASE SUCCESSFULLY");
 		} else {
 			request.setAttribute("result", "INSERT DATABASE ERROR");

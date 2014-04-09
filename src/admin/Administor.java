@@ -7,7 +7,8 @@ import login.person.*;
 import esperengine.stock.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import esperengine.cepConfig.*;
+import helper.*;
 public class Administor extends HttpServlet
 {
 	private String methodNewRule = "newRule";
@@ -82,7 +83,8 @@ public class Administor extends HttpServlet
 		String []argName = request.getParameterValues("arg_name");
 		String []argDescription = request.getParameterValues("arg_description");
 		epl = EPLChecker.replaceEPLKey(epl);
-		boolean flag = EPLChecker.checkSyntax(epl, argExample);
+		List<String> argExampleList = Helper.getList(argExample);
+		boolean flag = CepConfig.isEPLValid(epl, argExampleList);
 		if (!flag) {
 			request.setAttribute("result", "SYNTAX ERROR!");
 		} else {

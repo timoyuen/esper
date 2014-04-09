@@ -9,6 +9,6 @@ public class StockDAOFactory
 		return new StockRuleDAOImpl();
 	}
 	public static RuleSubscriptionDAO getRuleSubscriptionDAOInstance() {
-		return new RuleSubscriptionImpl();
+		return new RuleSubscriptionDAOImpl();
 	}
 }

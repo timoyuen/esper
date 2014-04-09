@@ -14,15 +14,15 @@ CREATE TABLE IF NOT EXISTS stock_code(
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS rule_subscription(
-    subscribtion_id int primary key auto_increment,
-    userid varchar(30) not null,
-    epl_id 			   int,
-    start_time    datetime,
-    end_time 		datetime,
-    is_subscription_valid 	char,
-    user_args 			BLOB not null,
-    priority 		char,  # INFO. IMPORTANT.
-    tag_list 		varchar(30),
+ subscription_id int primary key auto_increment,
+ userid varchar(30) not null,
+ epl_id int,
+ start_time datetime,
+ end_time datetime,
+ is_subscription_valid char,
+ user_args 	BLOB not null,
+ priority char,  # INFO. IMPORTANT.
+ tag_list varchar(30)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE TABLE IF NOT EXISTS stock_epl_template(
     epl_id int primary key auto_increment,

@@ -14,34 +14,27 @@ public class DataBaseAccess
 		List<Object> ret = new ArrayList<Object>();
 		ResultSet rs;
 		try {
-			if (args == null) {
-				Statement stmt = dbc.getConnection().createStatement();
-				rs = stmt.executeQuery(sql);
-				ret.add(rs);
-				List<Object> cl = new ArrayList<Object>();
-				cl.add(rs);
-				cl.add(stmt);
-				cl.add(dbc);
-				ret.add(cl);
-			} else {
-				PreparedStatement pstmt = dbc.getConnection().prepareStatement(sql);
-				int count = 0;
+			PreparedStatement pstmt = dbc.getConnection().prepareStatement(sql);
+			int count = 0;
+			if (args != null && !args.isEmpty()) {
 				for (Object arg : args) {
-					if (arg instanceof String)
+					if (arg instanceof String) {
 						pstmt.setString(++count, (String)arg);
-					else
+					}
+					else {
 						pstmt.setObject(++count, arg);
+					}
 				}
-				rs = pstmt.executeQuery();
-				ret.add(rs);
-				List<Object> cl = new ArrayList<Object>();
-				cl.add(rs);
-				cl.add(pstmt);
-				cl.add(dbc);
-				ret.add(cl);
 			}
+			rs = pstmt.executeQuery();
+			ret.add(rs);
+			List<Object> cl = new ArrayList<Object>();
+			cl.add(rs);
+			cl.add(pstmt);
+			cl.add(dbc);
+			ret.add(cl);
 		} catch(Exception e) {
-			System.out.println(sql);
+			log.error(sql);
 			System.out.println(e);
 		}
 		return ret;
@@ -71,33 +64,34 @@ public class DataBaseAccess
 
 	public static int executeUpdate(String sql, List<Object> args) {
 		DataBaseConnection dbc = new DataBaseConnection();
-		Statement stmt = null;
+		PreparedStatement stmt = null;
 		ResultSet generatedKeys = null;
 		int rs = -1;
 		try {
-			if (args == null) {
-				Statement stmt = dbc.getConnection().createStatement();
-				rs = stmt.executeUpdate(sql);
-				stmt.close();
-			} else {
-				stmt = dbc.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-				int count = 0;
+			stmt = dbc.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			int count = 0;
+			if (args != null && !args.isEmpty()) {
 				for (Object arg : args) {
-					if (arg instanceof String)
+					if (arg instanceof String) {
+						log.info(arg);
 						stmt.setString(++count, (String)arg);
-					else
+					}
+					else {
+						log.info(arg);
 						stmt.setObject(++count, arg);
+					}
 				}
-				rs = stmt.executeUpdate();
-				stmt.close();
 			}
+			rs = stmt.executeUpdate();
 			generatedKeys = stmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
-            	rs = generatedKeys.getLong(1);
+            	rs = generatedKeys.getInt(1);
             } else {
             	rs = -1;
             }
+			stmt.close();
 		} catch(Exception e) {
+			log.error(sql);
 			System.out.println(e);
 		} finally {
 			dbc.close();

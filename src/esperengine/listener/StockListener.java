@@ -5,12 +5,15 @@ import java.util.Date;
 import com.espertech.esper.client.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import login.person.*;
 public class StockListener implements UpdateListener {
 
 	private int pct = 3;
     static Log log = LogFactory.getLog(StockListener.class);
-
-	public StockListener() {}
+    PersonVo pv = null;
+	public StockListener(PersonVo pv) {
+		this.pv = pv;
+	}
 	public StockListener(int percentage) {
 		pct = percentage;
 	}

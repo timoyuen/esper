@@ -1,7 +1,8 @@
 package esperengine.stock;
 import java.util.List;
+import login.person.*;
 public interface RuleSubscriptionDAO
 {
-	public String getEPLWithSubId(long subId, PersonVo pv);
-	public List<String> getAllEPLRules();
+	public RuleSubscriptionVo getEPLWithSubId(int subId);
+	public List<RuleSubscriptionVo> getAllEPLRules();
 }
