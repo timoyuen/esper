@@ -33,6 +33,10 @@ public class StockCrawlerJob implements Job {
 		StockCode.startGenStockBean();
 		while ((stock = StockCode.nextStockBean()) != null) {
 			CepConfig.sendEvent(dataMap.get("cepRT"), stock);
+
+			StockDetailDAO sdd = StockDAOFactory.getStockDetailInstance();
+			sdd.insertStockDetail(stock.getCode(), stock);
+
 			log.info("Send Event-> Code: " + stock.getCode() +
 			                   ", Price: " + stock.getCurPrice() + ", " + stock.getCurTime());
 		}

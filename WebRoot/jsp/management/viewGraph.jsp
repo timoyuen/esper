@@ -1,0 +1,116 @@
+<%@page contentType="text/html;charset=utf-8"%>
+<%@page import="java.util.*"%>
+<%@page import="java.text.*"%>
+
+<%@page import="esperengine.stock.*" %>
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Load css for c3 basic styles -->
+<link rel="stylesheet" type="text/css" href="css/c3.css">
+<!-- Load d3.js and c3.js -->
+<script src="js/d3.js" charset="utf-8"></script>
+<script src="js/c3.js"></script>
+<body>
+  <div id="chart"></div>
+  <%
+      List<Object> allStock = (List<Object>)request.getAttribute("allStockCode");
+      int allStockCount = allStock.size();
+  %>
+<script>
+var chart = c3.generate({
+    data: {
+      x: 'x',
+      columns: [
+      <%
+          int stockCount = 1;
+          List<Date> xAxis = new ArrayList<Date>();
+          for (Object oo : allStock) {
+            List<StockInfo> o = (List<StockInfo>)oo;
+            if (stockCount == 1) {
+              out.print("[\'x\'");
+              for (StockInfo si : o) {
+                out.print(", \'"+si.getCurTimeString()+"\'");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                xAxis.add(dateFormat.parse(si.getCurTimeString()));
+              }
+              out.print("],\n");
+            }
+            out.print("[\'"+o.get(0).getCode()+"\'");
+            for (StockInfo si : o) {
+              out.print(", "+si.getCurPrice());
+            }
+            if (stockCount == allStockCount)
+              out.print("]\n");
+            else
+              out.print("],\n");
+            stockCount++;
+          }
+      %>
+      ]
+    },
+    axis: {
+      x: {
+          type: 'timeseries',
+          tick: {
+              format: '%Y-%m-%d %H:%M:%S'
+          }
+      }
+    }
+});
+</script>
+<%
+    List<EventVo> eventList = (List<EventVo>)request.getAttribute("eventList");
+    if (eventList == null) {
+      out.print("<script>alert('Oops');</script>");
+    } else if (eventList.size() == 1) {
+          EventVo ev = eventList.get(0);
+          List<Object> lo = ev.getNewEvent();
+          out.print("<table class='table table-hover'>");
+          int i = 0;
+          for (Object o : lo) {
+            Map<String, Object> map = (Map<String, Object>) o;
+            if (i == 0) {
+              out.print("<thead><tr>");
+              for (String key : map.keySet()) {
+                out.print("<td>"+key+"</td>");
+              }
+              out.print("</tr></thead><tbody>");
+            } else {
+              out.print("<tr>");
+              for (String key : map.keySet()) {
+                out.print("<td>"+map.get(key)+"</td>");
+              }
+              out.print("</tr>");
+            }
+          }
+          out.print("</tbody></table>");
+    } else {
+      for (EventVo ev : eventList) {
+        out.print("<h2>"+ev.getCreateTime()+"</h2>");
+        List<Object> lo = ev.getNewEvent();
+          out.print("<table class='table table-hover'>");
+          int i = 0;
+          for (Object o : lo) {
+            Map<String, Object> map = (Map<String, Object>) o;
+            if (i == 0) {
+              out.print("<thead><tr>");
+              for (String key : map.keySet()) {
+                out.print("<td>"+key+"</td>");
+              }
+              out.print("</tr></thead><tbody>");
+            }
+            {
+              out.print("<tr>");
+              for (String key : map.keySet()) {
+                out.print("<td>"+map.get(key)+"</td>");
+              }
+              out.print("</tr>");
+            }
+          }
+          out.print("</tbody></table>");
+      }
+    }
+%>
+</body>
+</html>

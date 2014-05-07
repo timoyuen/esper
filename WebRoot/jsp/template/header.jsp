@@ -1,8 +1,7 @@
-<%@page contentType="text/html;charset=utf-8"%>
-<%@page import="java.util.*"%>
 <!DOCTYPE html>
 <html>
 <head>
-  	<link rel="stylesheet" type="text/css" href="">
-  	<script type='text/javascript'src='js/jquery.1.8.0.js'></script>
+	<link rel="stylesheet" href="http://cdn.bootcss.com/twitter-bootstrap/3.0.3/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/doc.css">
+	<title><%=request.getParameter("title")%></title>
 </head>

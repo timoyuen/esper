@@ -71,6 +71,10 @@
       <servlet-name>UserDashBoard</servlet-name>
       <servlet-class>management.UserDashBoard</servlet-class>
     </servlet>
+    <servlet>
+      <servlet-name>UserRegister</servlet-name>
+      <servlet-class>register.UserRegister</servlet-class>
+    </servlet>
 
     <servlet-mapping>
       <servlet-name>UserLogin</servlet-name>
@@ -83,6 +87,10 @@
     <servlet-mapping>
       <servlet-name>UserDashBoard</servlet-name>
       <url-pattern>/management/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>UserRegister</servlet-name>
+      <url-pattern>/register/*</url-pattern>
     </servlet-mapping>
     <!-- Async examples -->
 <!--     <servlet>

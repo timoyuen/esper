@@ -16,8 +16,10 @@ public class UserLogin extends HttpServlet
 	{
 		String method = request.getParameter("method");
 		if (method == null) {
+			request.setAttribute("title", "USER LOGIN");
 			request.getRequestDispatcher(defaultLogin).forward(request, response);
 		} else if (method.equals("register")) {
+			request.setAttribute("title", "USER REGISTER");
 			request.getRequestDispatcher(defaultRegister).forward(request, response);
 		} else {
 			response.sendRedirect("errors");

@@ -51,11 +51,15 @@ public class StockEsperInstance implements EsperInstance {
 	}
 	public void insertNewSub(int subId) {
         RuleSubscriptionDAO rsd = StockDAOFactory.getRuleSubscriptionDAOInstance();
-        PersonVo pv = new PersonVo();
         RuleSubscriptionVo rule = rsd.getEPLWithSubId(subId);
         if (CepConfig.isEPLValid(rule.getEpl(), rule.getUserArgs())) {
-            cep.createEPL(rule.getEpl(), rule.getUserArgs(), rule.getSubId(), new StockListener(rule.getPv()));
+            cep.createEPL(rule.getEpl(), rule.getUserArgs(), rule.getSubId(), new StockListener(subId));
         }
+    }
+
+    public void updateOldSub(int subId) {
+        cep.destroyEPL(subId);
+        insertNewSub(subId);
     }
 
     private void initRule() {
@@ -63,7 +67,8 @@ public class StockEsperInstance implements EsperInstance {
         List<RuleSubscriptionVo> rule = rsd.getAllEPLRules();
         for (RuleSubscriptionVo str : rule) {
             if (CepConfig.isEPLValid(str.getEpl(), str.getUserArgs())) {
-                cep.createEPL(str.getEpl(), str.getUserArgs(), str.getSubId(), new StockListener(str.getPv()));
+                cep.createEPL(str.getEpl(), str.getUserArgs(), str.getSubId(),
+                              new StockListener(Integer.parseInt(str.getSubId())));
             }
         }
     }

@@ -1,11 +1,9 @@
 <%@page contentType="text/html;charset=utf-8" pageEncoding="UTF-8"%>
 <%@page import="java.util.*"%>
 <%@page import="esperengine.stock.StockInfo"%>
-<html>
-<head>
-	<title>CONFIRM STOCK CODE</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-</head>
+<jsp:include  page="../template/header.jsp">
+    <jsp:param name="title" value='<%=request.getAttribute("title")%>'/>
+</jsp:include>
 <body>
 <center>
 	<div>

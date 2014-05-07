@@ -1,57 +1,47 @@
 <%@page contentType="text/html;charset=utf-8"%>
 <%@page import="java.util.*"%>
-<html>
-<head>
-	<title>REGISTER</title>
-</head>
+<jsp:include  page="../template/header.jsp">
+    <jsp:param name="title" value='<%=request.getAttribute("title")%>'/>
+</jsp:include>
 <body>
-<center>
+<div class="container">
+	<h2>USER REGISTER</h2>
 	<%
-		if(request.getAttribute("errors")!=null)
-		{
+		if(request.getAttribute("errors")!=null) {
+			out.print("<ul>");
 			List all = (List)request.getAttribute("errors");
 			Iterator iter = all.iterator();
-			while(iter.hasNext()) {
-	%>
+			while(iter.hasNext()) { %>
 				<li><%=iter.next()%></li>
-	<%
-			}
+	<%		}
+			out.print("</ul>");
 		}
 	%>
-
-	<form action="login?method=register" method="post">
-	<table>
-		<tr>
-			<td colspan="2">USER REGISTER</td>
-		</tr>
-		<tr>
-			<td>Username</td>
-			<td><input type="text" name="username" value="${person.userName}"></td>
-		</tr>
-		<tr>
-			<td>password</td>
-			<td><input type="password" name="password"></td>
-		</tr>
-		<tr>
-			<td>password again</td>
-			<td><input type="password" name="password_again"></td>
-		</tr>
-		<tr>
-			<td>email</td>
-			<td><input type="text" name="email" value="${person.email}"></td>
-		</tr>
-		<tr>
-			<td>telephone</td>
-			<td><input type="text" name="telephone" value="${person.telephone}"></td>
-		</tr>
-		<tr>
-			<td colspan="2">
-			<input type="submit" value="Register">
-			<input type="reset" value="Reset">
-			</td>
-		</tr>
-	</table>
+	<form action="login?method=register" method="post" role='form'>
+		<div class="form-group">
+			<label>username</label>
+			<input type="text" name="username" class='form-control'value="${person.userName}">
+		</div>
+		<div class="form-group">
+			<label>password</label>
+			<input type="password" name="password" class='form-control'>
+		</div>
+		<div class="form-group">
+			<label>password again</label>
+			<input type="password" name="password_again" class='form-control'>
+		</div>
+		<div class="form-group">
+			<label>email</label>
+			<input type="text" name="email" value="${person.email}" class='form-control'>
+		</div>
+		<div class="form-group">
+			<label>telephone</label>
+			<input type="text" name="telephone" value="${person.telephone}" class='form-control'>
+		</div>
+		<div class="form-group">
+			<button class="btn btn-default" type='submit'>register</button>
+		</div>
 	</form>
-</center>
+</div>
 </body>
 </html>

@@ -4,9 +4,9 @@ import login.person.*;
 public interface StockRuleDAO
 {
 	public boolean insert(String epl, String ruleDescription,
-	                             String [] argExample, String [] argDescription);
-	public List<StockRuleVo> getAllRules(int page);
-	public int getRulePageCount();
+	                             String [] argExample, String [] argDescription,
+	                             List<String> eventIdList);
+	public List<StockRuleVo> getAllRulesWithPage(int page, int itemPerPage);
+	public int getAllRulesCount();
 	public StockRuleVo getRuleWithId(String id);
-	public int insertUserRule(String eplId, String[] args, PersonVo pv);
 }

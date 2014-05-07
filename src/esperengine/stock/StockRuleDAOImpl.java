@@ -22,14 +22,15 @@ import org.apache.commons.logging.LogFactory;
 
 public class StockRuleDAOImpl implements StockRuleDAO
 {
-	private static final int itemPerPage = 10;
+	// private static final int itemPerPage = 10;
     static Log log = LogFactory.getLog(StockRuleDAOImpl.class);
 	public boolean insert(String epl, String ruleDescription,
-	                             String [] argExample, String [] argDescription)
+	                      String [] argExample, String [] argDescription,
+	                      List<String> eventIdList)
 	{
 		String sql = "INSERT INTO stock_epl_template(epl_str, "+
-		             "rule_description, rule_args_example, rule_args_description) "+
-					 "VALUES(?, ?, ?, ?)";
+		             "rule_description, rule_args_example, rule_args_description, event_id_list) "+
+					 "VALUES(?, ?, ?, ?, ?)";
 		List<Object> args = new ArrayList<Object>();
 		args.add(epl);
 		args.add(ruleDescription);
@@ -37,11 +38,12 @@ public class StockRuleDAOImpl implements StockRuleDAO
 		List<String> argDescriptionList = Helper.getList(argDescription);
 		args.add(argExampleList);
 		args.add(argDescriptionList);
+		args.add(eventIdList);
 		int rs = DataBaseAccess.executeUpdate(sql, args);
 		return rs > 0 ? true: false;
 	}
 
-	public int getRulePageCount() {
+	public int getAllRulesCount() {
 		String sql = "SELECT COUNT(epl_id) as epl_count "+
 					 "FROM stock_epl_template";
 		List<Object> lo = DataBaseAccess.executeQuery(sql, null);
@@ -50,18 +52,18 @@ public class StockRuleDAOImpl implements StockRuleDAO
 		try {
 			if (rs.next())
 				count = Integer.parseInt(rs.getString("epl_count"));
-			return count;
 		} catch (SQLException e) {
 			System.out.println(e);
 		} finally {
 			DataBaseAccess.close(lo.get(1));
 		}
-		return (count + itemPerPage - 1) / itemPerPage;
+		return count;
+		// return (count + itemPerPage - 1) / itemPerPage;
 	}
 
 	public StockRuleVo getRuleWithId(String id) {
 		String sql;
-		sql = "SELECT epl_id, epl_str, rule_description, rule_args_description, rule_args_example "+
+		sql = "SELECT epl_id, epl_str, rule_description, rule_args_description, rule_args_example, event_id_list "+
 					 "FROM stock_epl_template WHERE epl_id=?";
 		List<Object> args = new ArrayList<Object>();
 		args.add(id);
@@ -72,11 +74,13 @@ public class StockRuleDAOImpl implements StockRuleDAO
 			if (rs.next()) {
     			List<String> ruleArgsDescription = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream(4));
     			List<String> ruleArgsExample = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream(5));
+    			List<String> eventIdList = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("event_id_list"));
 				sv = new StockRuleVo(Integer.parseInt(rs.getString("epl_id")),
 				                                 rs.getString("epl_str"),
 				                                 rs.getString("rule_description"),
 				                                 ruleArgsDescription,
-				                                 ruleArgsExample);
+				                                 ruleArgsExample,
+				                                 eventIdList);
 
 			}
 		} catch (Exception e) {
@@ -87,7 +91,7 @@ public class StockRuleDAOImpl implements StockRuleDAO
 		return sv;
 	}
 
-	public List<StockRuleVo> getAllRules(int page) {
+	public List<StockRuleVo> getAllRulesWithPage(int page, int itemPerPage) {
 		String sql;
 		sql = "SELECT epl_id, epl_str, rule_description, rule_args_description, rule_args_example "+
 					 "FROM stock_epl_template LIMIT ?, ?";
@@ -114,15 +118,5 @@ public class StockRuleDAOImpl implements StockRuleDAO
 			DataBaseAccess.close(lo.get(1));
 		}
 		return ruleContainer;
-	}
-
-	public int insertUserRule(String eplId, String[] userArgs, PersonVo pv) {
-		String sql = "INSERT INTO rule_subscription(epl_id, user_args, userid) "+
-					 "VALUES(?, ?, ?)";
-		List<Object> args = new ArrayList<Object>();
-		args.add(eplId);
-		args.add(Helper.getList(userArgs));
-		args.add(pv.getUserName());
-		return DataBaseAccess.executeUpdate(sql, args);
 	}
 }

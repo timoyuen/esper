@@ -32,10 +32,34 @@ public class CepConfig
 		cepAdmin.getConfiguration().addEventType(eventName, className);
 	}
 
+	private static String getEPLFiltered(String epl, List<String> argExampleList) {
+		int anything = -1;
+		int argIndex = 0;
+		while (true) {
+			anything = epl.indexOf("?", anything + 1);
+			if (anything == -1) {
+				break;
+			} else {
+				if (epl.substring(anything - 1, anything).equals("=")) {
+					epl = epl.replaceFirst("\\?", "#");
+					argIndex += 1;
+					log.info("1"+epl);
+				} else {
+					log.info("2"+epl);
+					epl = epl.replaceFirst("\\?", argExampleList.get(argIndex));
+					argExampleList.remove(argIndex);
+				}
+			}
+		}
+		return epl.replace("#", "?");
+	}
 	public void createEPL(String epl, List<String> args, String eplName, UpdateListener listener)
 	{
 		/// createEPL(String eplStatement, String statementName)
 		log.info("createing epl "+eplName+": "+epl);
+		epl = getEPLFiltered(epl, args);
+		log.info("filtered EPL"+epl);
+		log.info(args);
 		try {
 			int i = 0;
 			EPPreparedStatement pstmt = cepAdmin.prepareEPL(epl);
@@ -44,6 +68,16 @@ public class CepConfig
 			}
 			EPStatement stmt = cepAdmin.create(pstmt, eplName);
 			stmt.addListener(listener);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	public void destroyEPL(int subId) {
+		log.info("DestroyEPL..."+subId);
+		try {
+			EPStatement epl = cepAdmin.getStatement(Integer.toString(subId));
+			epl.destroy();
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -59,18 +93,26 @@ public class CepConfig
 	}
 	public static boolean isEPLValid(String epl, List<String> args) {
 		int i = 0;
+		List<String> oldArgs = new ArrayList<String>();
+		for (String a : args)
+			oldArgs.add(a);
+		String filteredEPL = getEPLFiltered(epl, args);
 		boolean flag = true;
 		try {
-			EPPreparedStatement pstmt = testCepAdmin.prepareEPL(epl);
+			EPPreparedStatement pstmt = testCepAdmin.prepareEPL(filteredEPL);
 			for (String arg : args) {
 				pstmt.setObject(++i, arg);
 			}
 			testCepAdmin.create(pstmt);
 		} catch (Exception e) {
 			flag = false;
+			System.out.println(e);
 		} finally {
 			testCepAdmin.destroyAllStatements();
 		}
+		args.clear();
+		for (String a : oldArgs)
+			args.add(a);
 		return flag;
 	}
 }

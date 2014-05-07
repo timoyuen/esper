@@ -26,12 +26,12 @@ public class Administor extends HttpServlet
 	private boolean getDispatcher(String testMethod, HttpServletRequest request, HttpServletResponse response)
 														throws IOException, ServletException {
 		if (method == null) {
+			request.setAttribute("title", methodNewRule);
 			request.getRequestDispatcher(getFullMethodPath(methodNewRule)).forward(request, response);
 			return true;
 		}
 		else {
 			if (method.equals(testMethod)) {
-				request.setAttribute("title", method);
 				request.getRequestDispatcher(getFullMethodPath(method)).forward(request, response);
 				return true;
 			}
@@ -44,7 +44,10 @@ public class Administor extends HttpServlet
 		response.setHeader("Pragma", "No-cache");
 		response.setHeader("Cache-Control", "no-cache");
 		response.setDateHeader("Expires", 0);
+		response.setContentType("text/html; charset=utf-8");
 		method = request.getParameter("method");
+		request.setAttribute("title", method);
+		request.setAttribute("curPage", method);
 		boolean valid = getDispatcher(methodNewRule, request, response) ||
 						getDispatcher(methodViewRules, request, response) ||
 						getDispatcher(methodViewStockCode, request, response) ||
@@ -56,6 +59,7 @@ public class Administor extends HttpServlet
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 															throws IOException, ServletException
 	{
+		response.setContentType("text/html; charset=utf-8");
 		method = request.getParameter("method");
 		if (method == null) {
 			errors(response);
@@ -82,22 +86,22 @@ public class Administor extends HttpServlet
 		String []argExample = request.getParameterValues("arg_example");
 		String []argName = request.getParameterValues("arg_name");
 		String []argDescription = request.getParameterValues("arg_description");
-		epl = EPLChecker.replaceEPLKey(epl);
+		String newEpl = EPLChecker.replaceEPLKey(epl);
 		List<String> argExampleList = Helper.getList(argExample);
-		boolean flag = CepConfig.isEPLValid(epl, argExampleList);
+		boolean flag = CepConfig.isEPLValid(newEpl, argExampleList);
 		if (!flag) {
 			request.setAttribute("result", "SYNTAX ERROR!");
 		} else {
-			if (StockDAOFactory.getStockRuleDAOInstance().insert(epl, ruleDescription, argExample, argDescription))
+			if (StockDAOFactory.getStockRuleDAOInstance().insert(newEpl, ruleDescription, argExample, argDescription))
 				request.setAttribute("result", "SUCCESSFULLY CREATE RULE TEMPLATE");
 			else
 				request.setAttribute("result", "INSERT TO DATABASE ERROR");
 		}
-		request.setAttribute("ruleDescription", ruleDescription);
+		// request.setAttribute("ruleDescription", ruleDescription);
 		request.setAttribute("epl", epl);
-		request.setAttribute("argExample", argExample);
-		request.setAttribute("argName", argName);
-		request.setAttribute("argDescription", argDescription);
+		// request.setAttribute("argExample", argExample);
+		// request.setAttribute("argName", argName);
+		// request.setAttribute("argDescription", argDescription);
 		request.getRequestDispatcher(getFullMethodPath(methodNewRule)).forward(request, response);
 	}
 
@@ -114,14 +118,13 @@ public class Administor extends HttpServlet
 	private void postNewStockCode(HttpServletRequest request, HttpServletResponse response)
 															throws IOException, ServletException
 	{
-		response.setContentType("text/html; charset=utf-8");
 		String stockCodeStr = request.getParameter("stock_code");
 		String []stockCodeArray = stockCodeStr.split("\n");
 		Set<String> stockCodeSet = new HashSet<String>();
 		for (String str : stockCodeArray) {
 			stockCodeSet.add(str);
 		}
-		StockCodeDAO st = StockDAOFactory.getStockDAOInstance();
+		StockCodeDAO st = StockDAOFactory.getStockCodeDAOInstance();
 		List<StockInfo> validList = new ArrayList<StockInfo>();
 		List<String> inValidList = new ArrayList<String>();
 		List<String> repeatedList = new ArrayList<String>();
@@ -149,7 +152,7 @@ public class Administor extends HttpServlet
 		/// NOTICE THAT here I use getParameterValues();
 		String [] codeArray = request.getParameterValues("confirm_code");
 		// System.out.println(codeArray.length);
-		StockCodeDAO st = StockDAOFactory.getStockDAOInstance();
+		StockCodeDAO st = StockDAOFactory.getStockCodeDAOInstance();
 		String errorMsg = null;
 		List<StockInfo> dbErrorCode = new ArrayList<StockInfo>();
 		String codeName;
@@ -175,7 +178,7 @@ public class Administor extends HttpServlet
 
 	private void errors(HttpServletResponse response) throws IOException, ServletException {
 		log.error("Administor errors");
-		response.sendRedirect("errors");
+		response.sendRedirect("jsp/errors");
 	}
 	private String getFullMethodPath(String method) {
 		String pathBase = "/jsp/admin/";

@@ -29,13 +29,54 @@ function findMatch(epl) {
 	valid_args.push("S3COUNT");
 	valid_args.push("S4COUNT");
 	valid_args.push("S5COUNT");
+	var matches = Array();
+	var anything = -1;
+	while (1) {
+		anything = epl.indexOf('?', anything + 1);
+		if (anything == -1) {
+			return matches;
+		} else if (anything > 0) {
+			if (epl.substr(anything - 1, 1) == '=') {
+				var dollar = -1;
+				for (var i = anything - 1; i >= 0; i--) {
+					if (epl.charAt(i) == '$') {
+						dollar = i;
+						break;
+					}
+				}
+				if (dollar != -1) {
+					var valid = false;
+					for (var i = 0; i < valid_args.length; i++) {
+						if (epl.substring(dollar + 1, anything - 1) == valid_args[i]) {
+							matches.push(valid_args[i]);
+							valid = true;
+							break;
+						}
+					}
+					if (!valid)
+						return false;
+				} else {
+					return false;
+				}
+			} else {
+				matches.push("Anything");
+			}
+		} else {
+			return false;
+		}
+
+	}
 	for (var i = 0; i < valid_args.length; i++) {
 		var args_pattern = eval("/"+"\\$"+valid_args[i]+"=\\?"+"/g");
-		var matches = epl.match(args_pattern);
-		return matches;
+		var match = epl.match(args_pattern);
+		if (match) {
+			for (var j = 0; j < match.length; j++)
+				matches.push(match[j]);
+		}
 		// if (matches)
 		// 	count += matches.length;
 	}
+	return matches;
 	// var count = 0;
 	// for (var i = 0; i < valid_args.length; i++) {
 	// 	var args_pattern = eval("/"+"\\"+valid_args[i]+"\\s"+"/g");

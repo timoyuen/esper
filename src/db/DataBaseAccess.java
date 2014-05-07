@@ -85,7 +85,7 @@ public class DataBaseAccess
 			rs = stmt.executeUpdate();
 			generatedKeys = stmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
-            	rs = generatedKeys.getInt(1);
+            	rs = generatedKeys.getInt(rs);
             } else {
             	rs = -1;
             }
@@ -121,7 +121,8 @@ public class DataBaseAccess
 	    	o = (Object)in.readObject();
 	    	in.close();
 	    } catch (Exception e) {
-	    	System.out.println(e);
+	    	// System.out.println(e);
+	    	o = null;
 	    } finally {
 	    }
 	    return o;

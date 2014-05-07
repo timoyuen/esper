@@ -1,8 +1,17 @@
 package esperengine.stock;
 
-import java.util.Date;
 import java.util.List;
-public class StockInfo {
+import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Date;
+import java.util.Iterator;
+import java.text.*;
+import java.io.*;
+public class StockInfo implements Serializable {
 	private String code;
 	/// order by http://hq.sinajs.cn/list=xxxx
 	private String name; 			 /// stock Name
@@ -121,6 +130,10 @@ public class StockInfo {
 	public List<Double> getSellOnePrice() { return sellOnePrice; }*/
 
 	public Date getCurTime() { return curTime; }
+	public String getCurTimeString() {
+		SimpleDateFormat time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return time.format(curTime);
+	}
 
 	public String toString() {
 		return code + ", " + name + ", " + curPrice.toString() + ", " + curTime.toString();

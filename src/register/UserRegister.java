@@ -7,7 +7,7 @@ import login.person.*;
 
 public class UserRegister extends HttpServlet
 {
-	private String path_base = "login/";
+	private String path_base = "jsp/login/";
 	private String default_path = path_base + "register.jsp";
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
 	{

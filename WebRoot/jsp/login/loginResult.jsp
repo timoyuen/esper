@@ -8,9 +8,9 @@
 <center>
 	<%  String result = (String)request.getAttribute("result");
 		if (result.equals("SUCCESS")) {
-			out.println("WELCOME! WE ARE NOW REDIRECTING YOU TO YOUR DASHBOARD"); %>
+			out.println("<h2>WELCOME! WE ARE NOW REDIRECTING YOU TO YOUR DASHBOARD</h2>"); %>
 			<script type='text/javascript'>
-				setTimeout(function() { window.location.href="management?method=viewTemplate"; }, 2000);
+				setTimeout(function() { window.location.href="management?method=viewTemplate"; }, 500);
 			</script>
 	<%  }
 	%>

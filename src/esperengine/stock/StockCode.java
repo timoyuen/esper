@@ -18,13 +18,14 @@ public class StockCode
 	private static boolean isInitialed = false;
 	private final static int lenPerRequest = 50;
 	private static List<String> stockCode = new ArrayList<String>();  /// notice that it's STATIC
-	private final static String requestURLBase = "http://hq.sinajs.cn/?list=";
+	// private final static String requestURLBase = "http://hq.sinajs.cn/?list=";
+	private final static String requestURLBase = "http://localhost/espercode?list=";
 	private static List<StockInfo> stockBeanList = null;
 	private static Iterator<StockInfo> it;
     static Log log = LogFactory.getLog(StockCode.class);
 
 	public static void initStockCode() {
-		stockCode = StockDAOFactory.getStockDAOInstance().getAllStockCode();
+		stockCode = StockDAOFactory.getStockCodeDAOInstance().getAllStockCode();
 		isInitialed = true;
 	}
 
