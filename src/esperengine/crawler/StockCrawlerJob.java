@@ -37,8 +37,8 @@ public class StockCrawlerJob implements Job {
 			StockDetailDAO sdd = StockDAOFactory.getStockDetailInstance();
 			sdd.insertStockDetail(stock.getCode(), stock);
 
-			log.info("Send Event-> Code: " + stock.getCode() +
-			                   ", Price: " + stock.getCurPrice() + ", " + stock.getCurTime());
+			// log.info("Send Event-> Code: " + stock.getCode() +
+			//                    ", Price: " + stock.getCurPrice() + ", " + stock.getCurTime());
 		}
 	}
 }

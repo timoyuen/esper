@@ -1,2 +1,55 @@
 EPL template:
 	SELECT $NAME FROM STOCK.win:time(3 sec) WHERE $CODE=?
+	SELECT $NAME FROM STOCK.win:time($TIME=?) WHERE $CODE=?
+	SELECT $NAME FROM STOCK.win:time(?) WHERE $CODE=?
+	SELECT $NAME, $CODE FROM STOCK.win:time(?) WHERE $CODE=?
+
+
+
+
+-- pattern
+insert into decStream
+SELECT * FROM Stock($CODE=?).win:time(? min) having ($CPRICE-first($CPRICE))/first($CPRICE)>?
+
+insert into ascStream
+SELECT * FROM Stock($CODE=?).win:time(? min) having (first($CPRICE)-$CPRICE)/$CPRICE>?
+
+SELECT A.* FROM pattern [every (A=ascStream -> B=decStream) where timer:within(? sec)]
+
+======================================================================================
+SELECT $CODE, $NAME FROM Stock.win:time(?) WHERE $CODE=?
+
+n分钟内单支股票价格上升/下降m%
+SELECT $CODE, $NAME, $CPRICE FROM Stock($CODE=?).win:time(? min) having (first($CPRICE)-$CPRICE)/$CPRICE>?
+SELECT $CODE, $NAME, $CPRICE FROM Stock($CODE=?).win:time(? min) having ($CPRICE-first($CPRICE))/first($CPRICE)>?
+
+n1分钟内单支股票价格上升m1%后n2分钟内该股票价格又下降m2%
+n1分钟内单支股票价格上升/下降m1%后，n2分钟内另一支股票价格上升/下降m2%
+insert into ascStream
+SELECT * FROM Stock($CODE=?).win:time(? min) having (first($CPRICE)-$CPRICE)/$CPRICE>?
+
+insert into decStream
+SELECT * FROM Stock($CODE=?).win:time(? min) having ($CPRICE-first($CPRICE))/first($CPRICE)>?
+
+SELECT A.code, B.code FROM pattern [every (A=ascStream -> B=decStream) where timer:within(? sec)]
+
+n分钟内，两支股票价格分别上升/下降m1%及m2%
+SELECT A.* FROM Stock($CODE=?).win:time(? min) as A, Stock($CODE=?).win:time(? min) as B
+having (first(A.$CPRICE)-A.$CPRICE)/A.$CPRICE>m1% and (first(B.$CPRICE)-B.$CPRICE)/B.$CPRICE>m2%
+
+某支股票在n分钟内的均价大于另一支股票的均价m%
+SELECT A.* FROM Stock($CODE=?).win:time(? min) as A, Stock($CODE=?).win:time(? min) as B
+having (avg(A.$CPRICE)-avg(B.$CPRICE))/avg(B.$CPRICE) > m%
+
+n分钟内，单支股票成交量以及成交金额分别上升m1%和m2%
+SELECT * FROM Stock($CODE=?).win:time(? min)
+having (first(成交量)-成交量)/成交量>m1% and (first(成交金额)-成交金额)/成交金额>?
+
+n分钟内，单支股票买/卖一手数上升/下降m%
+SELECT * FROM Stock($CODE=?).win:time(? min) having (first(买一)-买一)/买一>m%;
+
+n分钟内，单支股票买一手数和卖一手数分别上升/下降m1%和m2%
+SELECT * FROM Stock($CODE=?).win:time(? min)
+having (first(买一)-买一)/买一>m1% and (first(卖一)-卖一)/卖一>m2%;
+
+======================================================================================

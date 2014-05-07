@@ -5,7 +5,7 @@ import com.espertech.esper.collection.*;
 import esperengine.stock.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import helper.*;
 public class CepConfig
 {
 	private	Configuration cepConfigure;
@@ -43,9 +43,9 @@ public class CepConfig
 				if (epl.substring(anything - 1, anything).equals("=")) {
 					epl = epl.replaceFirst("\\?", "#");
 					argIndex += 1;
-					log.info("1"+epl);
+					// log.info("1"+epl);
 				} else {
-					log.info("2"+epl);
+					// log.info("2"+epl);
 					epl = epl.replaceFirst("\\?", argExampleList.get(argIndex));
 					argExampleList.remove(argIndex);
 				}
@@ -56,9 +56,9 @@ public class CepConfig
 	public void createEPL(String epl, List<String> args, String eplName, UpdateListener listener)
 	{
 		/// createEPL(String eplStatement, String statementName)
-		log.info("createing epl "+eplName+": "+epl);
+		// log.info("createing epl "+eplName+": "+epl);
 		epl = getEPLFiltered(epl, args);
-		log.info("filtered EPL"+epl);
+		log.info("filtered EPL "+epl);
 		log.info(args);
 		try {
 			int i = 0;
@@ -73,11 +73,32 @@ public class CepConfig
 		}
 	}
 
-	public void destroyEPL(int subId) {
+	public void createEventEPL(String eventStr, List<String> eventArgs, String eventName) {
+		// log.info("creating event "+eventName+": "+eventStr);
+		eventStr = getEPLFiltered(eventStr, eventArgs);
+		log.info("filtered event "+eventStr);
+		log.info("the args are "+eventArgs);
+		try {
+			int i = 0;
+			EPPreparedStatement pstmt = cepAdmin.prepareEPL(eventStr);
+			for (String arg : eventArgs) {
+				pstmt.setObject(++i, arg);
+			}
+			EPStatement stmt = cepAdmin.create(pstmt, eventName);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	public void destroyEPL(int subId, int eventArgsCount) {
 		log.info("DestroyEPL..."+subId);
 		try {
 			EPStatement epl = cepAdmin.getStatement(Integer.toString(subId));
 			epl.destroy();
+			for (int i = 0; i < eventArgsCount; i++) {
+				epl = cepAdmin.getStatement(""+subId+i);
+				epl.destroy();
+			}
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -91,6 +112,7 @@ public class CepConfig
 		EPRuntime cepRT = (EPRuntime)crt;
 		cepRT.sendEvent(event);
 	}
+
 	public static boolean isEPLValid(String epl, List<String> args) {
 		int i = 0;
 		List<String> oldArgs = new ArrayList<String>();
@@ -100,6 +122,34 @@ public class CepConfig
 		boolean flag = true;
 		try {
 			EPPreparedStatement pstmt = testCepAdmin.prepareEPL(filteredEPL);
+			for (String arg : args) {
+				pstmt.setObject(++i, arg);
+			}
+			testCepAdmin.create(pstmt);
+		} catch (Exception e) {
+			flag = false;
+			System.out.println(e);
+		} finally {
+			testCepAdmin.destroyAllStatements();
+		}
+		args.clear();
+		for (String a : oldArgs)
+			args.add(a);
+		return flag;
+	}
+	public static boolean isEPLValidWithEvent(String epl, List<String> args, List<String> eventName) {
+		int i = 0;
+		List<String> oldArgs = new ArrayList<String>();
+		for (String a : args)
+			oldArgs.add(a);
+		String filteredEPL = getEPLFiltered(epl, args);
+		boolean flag = true;
+		try {
+			EPPreparedStatement pstmt = testCepAdmin.prepareEPL(filteredEPL);
+			for (String str : eventName) {
+				String testEvent = "INSERT INTO "+str+" SELECT * FROM Stock";
+				testCepAdmin.createEPL(testEvent);
+			}
 			for (String arg : args) {
 				pstmt.setObject(++i, arg);
 			}

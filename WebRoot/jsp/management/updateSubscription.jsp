@@ -31,8 +31,22 @@
 				</thead>
 			<tbody>
 			<%
+
 			RuleSubscriptionVo srv = (RuleSubscriptionVo)request.getAttribute("oneRuleSub");
 			if (srv != null) {
+				List<StockInsertEventVo> le = (List<StockInsertEventVo>) request.getAttribute("allEvent");
+				for (StockInsertEventVo e : le) { %>
+					<tr><td>Argument For <%=e.getEventName()%></td><td>Description: <%=e.getEventDescription()%></td></tr>
+					<%
+					List<String> desc = e.getEventArgsDescription();
+					List<String> exp = e.getEventArgsExample();
+					int i = 0;
+					for (String d : desc) { %>
+						<tr><td><%=d%></td><td><%=exp.get(i)%></td><td><input type="text" class='form-control' name="<%=e.getEventName()%>_event_args"></td></tr>
+					<%
+						i++;
+					}
+				}
 				List<String> ruleArgsDescription = srv.getRuleArgsDescription();
 				List<String> ruleArgsExample = srv.getRuleArgsExample();
 				List<String> userArgs = srv.getUserArgs();

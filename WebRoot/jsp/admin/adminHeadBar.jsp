@@ -13,10 +13,13 @@
     <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
       <ul class="nav navbar-nav">
         <li <% if (curPage.equals("newRule")) out.println("class='active'"); %> >
-          <a href="admin?method=newRule">add temp</a>
+          <a href="admin?method=newRule">add template</a>
         </li>
         <li <% if (curPage.equals("newStockCode")) out.println("class='active'"); %> >
           <a href="admin?method=newStockCode">add stock code</a>
+        </li>
+        <li <% if (curPage.equals("newInsertEvent")) out.println("class='active'"); %> >
+          <a href="admin?method=newInsertEvent">insert new event</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">

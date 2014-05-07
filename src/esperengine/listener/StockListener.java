@@ -58,9 +58,11 @@ public class StockListener implements UpdateListener {
 			to = pv.getTelephone();
 			content = "IMPORTANT! Esper Template Engine has been triggered with id "+subId+", description: "+subscribe.getRuleDescription();
 			log.info(content);
-			/*if (SendSMS.send(to, content) == -1) {
-				log.error("Cannot SendSMS to "+to);
-			}*/
+			// if (SendSMS.send(to, content) == -1) {
+			// 	log.error("Cannot SendSMS to "+to);
+			// else {
+			// 	log.info("send sms succeeded");
+			// }
 		}
 
 //		Double prePrice = (Double) newData[0].get("curPrice");

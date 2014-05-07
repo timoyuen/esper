@@ -1,5 +1,6 @@
 <%@page contentType="text/html;charset=utf-8"%>
 <%@page import="java.util.*"%>
+<%@page import="esperengine.stock.*"%>
 <jsp:include  page="../template/header.jsp">
     <jsp:param name="title" value='<%=request.getAttribute("title")%>'/>
 </jsp:include>
@@ -28,7 +29,7 @@
 				<p>
 					We collect several features of stock information, and offer some for you.
 				</p>
-				<pre>$CODE => sock code,
+				<pre>$CODE => stock code,
 $NAME => stock name,
 $TOPENPRICE => today's opening price,
 $YOPENPRICE => yesterday's opening price,
@@ -59,13 +60,36 @@ $S4COUNT   => ...
 $S5COUNT   => ...
 $TIME      => 3 sec</pre>
 				<p>
-				<strong>NOTICE:</strong>
-				<ul>
-					<li>YOU HAVE TO END THE RULE WITH a "newline"</li>
-					<li>PARAMETER SHOULD BE LIKE THIS "$CODE=?"</li>
-				</ul>
+					<strong>NOTICE:</strong>
+					<ul>
+						<li>YOU HAVE TO END THE RULE WITH a "newline"</li>
+						<li>PARAMETER SHOULD BE LIKE THIS "$CODE=?"</li>
+					</ul>
 				</p>
 			</p>
+		</div>
+		<div>
+			<p>
+				This All the available events
+			</p>
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<td>event name</td>
+						<td>event description</td>
+					</tr>
+				</thead>
+				<tbody>
+			<%
+				List<StockInsertEventVo> sie = (List<StockInsertEventVo>) request.getAttribute("allEvent");
+				if (sie != null) {
+					for (StockInsertEventVo s : sie) { %>
+						<tr><td><%=s.getEventName()%></td><td><%=s.getEventDescription()%></td></tr>
+					<% }
+				}
+			%>
+				</tbody>
+			</table>
 		</div>
 		<div class="form-group">
 			<textarea name="epl" id="" class='form-control' rows="5">${epl}</textarea>

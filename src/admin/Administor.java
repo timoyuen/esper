@@ -18,6 +18,7 @@ public class Administor extends HttpServlet
 	private String methodNewStockCode = "newStockCode";
 	private String methodDeleteStockCdoe = "delStockCode";
 	private String methodConfirmStockCode = "confirmStockCode";
+	private String methodNewInsertEvent = "newInsertEvent";
 	// private String pathViewRules = getFullMethodPath(methodViewRules);
 	// private String pathViewStockCode = getFullMethodPath(methodViewStockCode);
 	// private String pathNewStockCode = getFullMethodPath(methodNewStockCode);
@@ -48,14 +49,26 @@ public class Administor extends HttpServlet
 		method = request.getParameter("method");
 		request.setAttribute("title", method);
 		request.setAttribute("curPage", method);
-		boolean valid = getDispatcher(methodNewRule, request, response) ||
-						getDispatcher(methodViewRules, request, response) ||
-						getDispatcher(methodViewStockCode, request, response) ||
-						getDispatcher(methodNewStockCode, request, response);
-		if (!valid)
-			errors(response);
+		if (method.equals(methodNewRule)) {
+			getNewRule(request, response);
+		} else {
+			boolean valid = getDispatcher(methodNewRule, request, response) ||
+							getDispatcher(methodViewRules, request, response) ||
+							getDispatcher(methodViewStockCode, request, response) ||
+							getDispatcher(methodNewStockCode, request, response) ||
+							getDispatcher(methodNewInsertEvent, request, response);
+			if (!valid)
+				errors(response);
+		}
 	}
 
+	public void getNewRule(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
+	{
+		StockInsertEventDAO sied = StockDAOFactory.getStockInsertEventDAOInstance();
+		List<StockInsertEventVo> lsiv = sied.getAllInsertEvent();
+		request.setAttribute("allEvent", lsiv);
+		request.getRequestDispatcher(getFullMethodPath(methodNewRule)).forward(request, response);
+	}
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 															throws IOException, ServletException
 	{
@@ -66,14 +79,17 @@ public class Administor extends HttpServlet
 		} else if (method.equals(methodNewRule)) {
 			postNewRule(request, response);
 		} else if (method.equals(methodViewRules)) {
-			postViewRules(request, response);
+			; //postViewRules(request, response);
 		} else if (method.equals(methodViewStockCode)) {
 			postViewStockCode(request, response);
 		} else if (method.equals(methodNewStockCode)) {
 			postNewStockCode(request, response);
 		} else if (method.equals(methodConfirmStockCode)) {
 			postConfirmStockCode(request, response);
-		} else {
+		} else if (method.equals(methodNewInsertEvent)) {
+			postNewInsertEvent(request, response);
+		}
+		else {
 			errors(response);
 		}
 	}
@@ -88,11 +104,21 @@ public class Administor extends HttpServlet
 		String []argDescription = request.getParameterValues("arg_description");
 		String newEpl = EPLChecker.replaceEPLKey(epl);
 		List<String> argExampleList = Helper.getList(argExample);
-		boolean flag = CepConfig.isEPLValid(newEpl, argExampleList);
+		StockInsertEventDAO sied = StockDAOFactory.getStockInsertEventDAOInstance();
+		List<StockInsertEventVo> lsiv = sied.getAllInsertEvent();
+		List<String> eventRelated = new ArrayList<String>();
+		List<String> eventRelatedName = new ArrayList<String>();
+		for (StockInsertEventVo e : lsiv) {
+			if (epl.indexOf(e.getEventName()) >= 0) {
+				eventRelated.add(e.getEventId());
+				eventRelatedName.add(e.getEventName());
+			}
+		}
+		boolean flag = CepConfig.isEPLValidWithEvent(newEpl, argExampleList, eventRelatedName);
 		if (!flag) {
 			request.setAttribute("result", "SYNTAX ERROR!");
 		} else {
-			if (StockDAOFactory.getStockRuleDAOInstance().insert(newEpl, ruleDescription, argExample, argDescription))
+			if (StockDAOFactory.getStockRuleDAOInstance().insert(newEpl, ruleDescription, argExample, argDescription, eventRelated))
 				request.setAttribute("result", "SUCCESSFULLY CREATE RULE TEMPLATE");
 			else
 				request.setAttribute("result", "INSERT TO DATABASE ERROR");
@@ -105,11 +131,6 @@ public class Administor extends HttpServlet
 		request.getRequestDispatcher(getFullMethodPath(methodNewRule)).forward(request, response);
 	}
 
-	private void postViewRules(HttpServletRequest request, HttpServletResponse response)
-															throws IOException, ServletException
-	{
-
-	}
 	private void postViewStockCode(HttpServletRequest request, HttpServletResponse response)
 															throws IOException, ServletException
 	{
@@ -174,6 +195,31 @@ public class Administor extends HttpServlet
 		request.setAttribute("error", errorMsg);
 		request.setAttribute("codeError", dbErrorCode);
 		request.getRequestDispatcher(getFullMethodPath("stockCodeResult")).forward(request,response);
+	}
+
+	private void postNewInsertEvent(HttpServletRequest request, HttpServletResponse response)
+															throws IOException, ServletException {
+		String epl = request.getParameter("epl");
+		String ruleDescription = request.getParameter("description");
+		String ruleName = request.getParameter("rule_name");
+		String []argExample = request.getParameterValues("arg_example");
+		String []argName = request.getParameterValues("arg_name");
+		String []argDescription = request.getParameterValues("arg_description");
+		String newEpl = EPLChecker.replaceEPLKey(epl);
+		List<String> argExampleList = Helper.getList(argExample);
+		boolean flag = CepConfig.isEPLValid(newEpl, argExampleList);
+		if (!flag) {
+			request.setAttribute("result", "SYNTAX ERROR!");
+		} else {
+			if (StockDAOFactory.getStockInsertEventDAOInstance().insert(newEpl, ruleName, ruleDescription,
+			    														argExample, argDescription))
+				request.setAttribute("result", "SUCCESSFULLY CREATE EVENT TEMPLATE");
+			else
+				request.setAttribute("result", "INSERT TO DATABASE ERROR");
+		}
+		request.setAttribute("ruleDescription", ruleDescription);
+		request.setAttribute("epl", epl);
+		request.getRequestDispatcher(getFullMethodPath(methodNewInsertEvent)).forward(request, response);
 	}
 
 	private void errors(HttpServletResponse response) throws IOException, ServletException {

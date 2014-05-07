@@ -12,6 +12,7 @@ import error.*;
 import login.person.*;
 import esperengine.EsperEngine;
 import esperengine.StockEsperInstance;
+import helper.*;
 public class UserDashBoard extends HttpServlet
 {
     static Log log = LogFactory.getLog(UserDashBoard.class);
@@ -22,6 +23,7 @@ public class UserDashBoard extends HttpServlet
 	private static final String methodViewHistory = "viewHistory";
 	private static final String methodUpdateSubscription = "updateSubscription";
 	private static final String methodViewGraph = "viewGraph";
+	private static final String methodDeleteSub = "deleteSub";
 	private static final String errorOccur = "errorOccur";
 	private HttpSession session = null;
 	final static int itemPerPage = 10;
@@ -68,6 +70,8 @@ public class UserDashBoard extends HttpServlet
 			getUpdateSubscription();
 		} else if (method.equals(methodViewGraph)) {
 			getViewGraph();
+		} else if (method.equals(methodDeleteSub)) {
+			getDeleteSub();
 		}
 		return;
 	}
@@ -90,7 +94,19 @@ public class UserDashBoard extends HttpServlet
 	private void getViewDetail() throws IOException, ServletException {
 		String id = request.getParameter("id");
 		StockRuleDAO sd = StockDAOFactory.getStockRuleDAOInstance();
-		request.setAttribute("rule", sd.getRuleWithId(id));
+		StockInsertEventDAO ed = StockDAOFactory.getStockInsertEventDAOInstance();
+		StockRuleVo srv = sd.getRuleWithId(id);
+		String eplStr = srv.getEplStr();
+		List<String> allEventId = srv.getEventIdList();
+		List<StockInsertEventVo> allEventRelated = new ArrayList<StockInsertEventVo>();
+		if (allEventId != null) {
+			for (String s : allEventId) {
+				allEventRelated.add(ed.getInsertEventWithId(s));
+			}
+		}
+		request.setAttribute("allEvent", allEventRelated);
+		request.setAttribute("rule", srv);
+
 		request.getRequestDispatcher(getFullMethodPath(methodViewDetail)).forward(request, response);
 	}
 
@@ -113,6 +129,13 @@ public class UserDashBoard extends HttpServlet
 	private void getUpdateSubscription() throws IOException, ServletException {
 		int subId = Integer.parseInt((String)request.getParameter("subid"));
 		showSubscriptionWithSubId(subId);
+	}
+
+	private void getDeleteSub() throws IOException, ServletException {
+		String subId = (String)request.getParameter("subid");
+		RuleSubscriptionDAO srd = StockDAOFactory.getRuleSubscriptionDAOInstance();
+		srd.delete(subId);
+		request.getRequestDispatcher(getFullMethodPath(methodDeleteSub)).forward(request, response);
 	}
 
 	private List<String> findStockCodeInEPL(String epl, List<String> args) {
@@ -178,6 +201,17 @@ public class UserDashBoard extends HttpServlet
 	private void showSubscriptionWithSubId(int subId) throws IOException, ServletException {
 		RuleSubscriptionDAO rs = StockDAOFactory.getRuleSubscriptionDAOInstance();
 		RuleSubscriptionVo rsv = rs.getEPLWithSubId(subId);
+
+		List<String> allEventId = rsv.getEventIdList();
+		List<StockInsertEventVo> allEventRelated = new ArrayList<StockInsertEventVo>();
+		StockInsertEventDAO sied = StockDAOFactory.getStockInsertEventDAOInstance();
+		if (allEventId != null) {
+			for (String s : allEventId) {
+				allEventRelated.add(sied.getInsertEventWithId(s));
+			}
+		}
+		request.setAttribute("allEvent", allEventRelated);
+		//
 		request.setAttribute("oneRuleSub", rsv);
 		request.getRequestDispatcher(getFullMethodPath(methodUpdateSubscription)).forward(request, response);
 	}
@@ -218,12 +252,40 @@ public class UserDashBoard extends HttpServlet
 	private void postMakeSubscription() throws IOException, ServletException {
 		String [] args = (String []) request.getParameterValues("user_args");
 		String id = (String) request.getParameter("id");
-		RuleSubscriptionDAO sd = StockDAOFactory.getRuleSubscriptionDAOInstance();
 		String priority = (String) request.getParameter("priority");
-		int rs = sd.insertUserSubsciption(id, args, (PersonVo)session.getAttribute("user"), priority);
+
+		RuleSubscriptionDAO sd = StockDAOFactory.getRuleSubscriptionDAOInstance();
+		StockInsertEventDAO sied = StockDAOFactory.getStockInsertEventDAOInstance();
+		StockRuleDAO srd = StockDAOFactory.getStockRuleDAOInstance();
+		StockRuleVo srv = srd.getRuleWithId(id);
+		String eplStr = srv.getEplStr();
+		List<String> insertEventIdList = srv.getEventIdList();
+		List<Object> allEventArgs = new ArrayList<Object>();
+		if (insertEventIdList != null) {
+			for (String s : insertEventIdList) {
+				StockInsertEventVo vo = sied.getInsertEventWithId(s);
+				String [] a = (String []) request.getParameterValues(vo.getEventName() + "_event_args");
+				allEventArgs.add(Helper.getList(a));
+			}
+		}
+		StockEsperInstance sei = (StockEsperInstance)(EsperEngine.getInstance("Stock"));
+
+		int rs = sd.insertUserSubsciption(id, args, allEventArgs, (PersonVo)session.getAttribute("user"), priority);
+		int i = 0;
 		if (rs > 0) {
-			StockEsperInstance sei = (StockEsperInstance)(EsperEngine.getInstance("Stock"));
-			sei.insertNewSub(rs);
+			if (insertEventIdList != null) {
+				for (String s : insertEventIdList) {
+					StockInsertEventVo vo = sied.getInsertEventWithId(s);
+					String [] eventArgs = (String []) request.getParameterValues(vo.getEventName() + "_event_args");
+					String eventStr = vo.getEventStr();
+					String rep = vo.getEventName() + rs + System.currentTimeMillis();
+					eventStr = eventStr.replaceAll(vo.getEventName(), rep);
+					eplStr = eplStr.replaceAll(vo.getEventName(), rep);
+					sei.insertNewEvent(eventStr, Helper.getList(eventArgs), "" + rs + "_" + i);
+					i++;
+				}
+			}
+			sei.insertNewSubWithEvent(eplStr, rs);
 			request.setAttribute("result", "INSERT DATABASE SUCCESSFULLY");
 		} else {
 			request.setAttribute("result", "INSERT DATABASE ERROR");
@@ -237,11 +299,23 @@ public class UserDashBoard extends HttpServlet
 		String id = (String) request.getParameter("subid");
 		RuleSubscriptionDAO sd = StockDAOFactory.getRuleSubscriptionDAOInstance();
 		String priority = (String) request.getParameter("priority");
-		int rs = sd.updateUserSubscription(id, args, (PersonVo)session.getAttribute("user"), priority);
+		StockRuleDAO srd = StockDAOFactory.getStockRuleDAOInstance();
+		StockRuleVo srv = srd.getRuleWithId(id);
+		List<String> insertEventIdList = srv.getEventIdList();
+		List<Object> allEventArgs = new ArrayList<Object>();
+		StockInsertEventDAO sied = StockDAOFactory.getStockInsertEventDAOInstance();
+		for (String s : insertEventIdList) {
+			StockInsertEventVo vo = sied.getInsertEventWithId(s);
+			String [] a = (String []) request.getParameterValues(vo.getEventName() + "_event_args");
+			allEventArgs.add(a);
+		}
+		//
+		int rs = sd.updateUserSubscription(id, args, allEventArgs, (PersonVo)session.getAttribute("user"), priority);
 		int subid = Integer.parseInt(id);
+		StockEsperInstance sei = (StockEsperInstance)(EsperEngine.getInstance("Stock"));
+
 		// if (rs > 0) {
-			StockEsperInstance sei = (StockEsperInstance)(EsperEngine.getInstance("Stock"));
-			sei.updateOldSub(subid);
+			sei.updateOldSub(subid, allEventArgs.size());
 			request.setAttribute("result", "UPDATE DATABASE SUCCESSFULLY");
 		// } else {
 			// request.setAttribute("result", "INSERT DATABASE ERROR");

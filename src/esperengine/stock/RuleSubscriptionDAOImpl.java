@@ -8,12 +8,15 @@ public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 {
 	public RuleSubscriptionVo getEPLWithSubId(int subId) {
 		String sql = "SELECT stock_epl_template.epl_str as epl_str, person.id as userid, "+
+					 "rule_subscription.epl_str AS epl_full_str, "+
 					 "person.password as password, person.telephone as telephone, "+
 					 "person.email as email, user_args, "+
 					 "stock_epl_template.rule_description as rule_description, "+
 					 "stock_epl_template.rule_args_description as rule_args_description, "+
 					 "stock_epl_template.rule_args_example as rule_args_example, "+
-					 "priority "+
+					 "priority, "+
+					 "event_args, "+
+					 "event_id_list "+
 					 "FROM rule_subscription, stock_epl_template, person "+
 					 "WHERE rule_subscription.userid=person.id AND "+
 					 "rule_subscription.epl_id=stock_epl_template.epl_id AND "+
@@ -30,6 +33,8 @@ public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 	    			List<String> userArgs = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("user_args"));
 	    			List<String> ruleArgsExample = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("rule_args_example"));
 	    			List<String> ruleArgsDescription = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("rule_args_description"));
+	    			List<Object> eventArgs = (List<Object>)DataBaseAccess.getBlobObj(rs.getBinaryStream("event_args"));
+	    			List<String> eventIdList = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("event_id_list"));
 
 	    			PersonVo pv = new PersonVo();
 	    			pv.setUserName(rs.getString("userid"));
@@ -39,7 +44,10 @@ public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 	    			rule = new RuleSubscriptionVo(String.valueOf(subId), epl, userArgs, pv,
 	    			                              ruleArgsDescription, ruleArgsExample,
 	    			                              rs.getString("rule_description"),
-	    			                              rs.getString("priority"));
+	    			                              rs.getString("priority"),
+	    			                              rs.getString("epl_full_str"),
+	    			                              eventArgs,
+	    			                              eventIdList);
 					// for (String arg : userArgs) {
 					// 	epl = epl.replace("\\?", arg);
 					// }
@@ -89,7 +97,7 @@ public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 	}
 
 	public List<RuleSubscriptionVo> getUserEPLWithUserNameAndPage(String userName, int curPage, int itemPerPage) {
-		String sql = "SELECT stock_epl_template.epl_str as epl_str, "+
+		String sql = "SELECT stock_epl_template.epl_str as epl_str, rule_subscription.epl_str as epl_full_str, "+
 					 "user_args, subscription_id, rule_subscription.create_time as create_time, "+
 					 "stock_epl_template.rule_description as rule_description "+
 					 "FROM rule_subscription, stock_epl_template "+
@@ -111,7 +119,8 @@ public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 	    		List<String> userArgs = (List<String>)DataBaseAccess.getBlobObj(rs.getBinaryStream("user_args"));
 					eplList.add(new RuleSubscriptionVo(rs.getString("subscription_id"), epl, userArgs,
 					            					   rs.getString("rule_description"),
-					            					   rs.getString("create_time")));
+					            					   rs.getString("create_time"),
+					            					   rs.getString("epl_full_str")));
 				}
 			} catch (Exception e) {
 				System.out.println(e);
@@ -142,24 +151,34 @@ public class RuleSubscriptionDAOImpl implements RuleSubscriptionDAO
 		return count;
 	}
 
-	public int insertUserSubsciption(String eplId, String[] userArgs, PersonVo pv, String priority) {
-		String sql = "INSERT INTO rule_subscription(epl_id, user_args, userid, priority) "+
-					 "VALUES(?, ?, ?, ?)";
+	public int insertUserSubsciption(String eplId, String[] userArgs, List<Object> eventArgs, PersonVo pv, String priority) {
+		String sql = "INSERT INTO rule_subscription(epl_id, user_args, userid, priority, event_args) "+
+					 "VALUES(?, ?, ?, ?, ?)";
 		List<Object> args = new ArrayList<Object>();
 		args.add(eplId);
 		args.add(Helper.getList(userArgs));
 		args.add(pv.getUserName());
 		args.add(priority);
+		args.add(eventArgs);
 		return DataBaseAccess.executeUpdate(sql, args);
 	}
-	public int updateUserSubscription(String subId, String [] userArgs, PersonVo pv, String priority) {
-		String sql = "UPDATE rule_subscription SET user_args=?, priority=? WHERE subscription_id=? AND userid=?";
+
+	public int updateUserSubscription(String subId, String [] userArgs, List<Object> eventArgs, PersonVo pv, String priority) {
+		String sql = "UPDATE rule_subscription SET user_args=?, priority=?, event_args=? WHERE subscription_id=? AND userid=?";
 		List<Object> args = new ArrayList<Object>();
 		args.add(Helper.getList(userArgs));
 		args.add(priority);
+		args.add(eventArgs);
 		args.add(subId);
 		args.add(pv.getUserName());
 		return DataBaseAccess.executeUpdate(sql, args);
+	}
+
+	public void delete(String subId) {
+		String sql = "DELETE FROM rule_subscription WHERE subscription_id=?";
+		List<Object> args = new ArrayList<Object>();
+		args.add(subId);
+		DataBaseAccess.executeUpdate(sql, args);
 	}
 }
 

@@ -6,14 +6,14 @@ import javax.activation.*;
 
 public class SendMail
 {
-   final static String from = "archy@0x271828.com";
-   final static String host = "mail.0x271828.com";
-   final static String username = "archy@0x271828.com";
-   final static String password = "314159zlc";
-   // final static String from = "zhulinchao7@gmail.com";
-   // final static String host = "mail.gmail.com";
-   // final static String username = "zhulinchao7@gmail.com";
-   // final static String password = "vn@w8[v&a;A$Q~s6z0wb2=k)J";
+   // final static String from = "archy@0x271828.com";
+   // final static String host = "mail.0x271828.com";
+   // final static String username = "archy@0x271828.com";
+   // final static String password = "314159zlc";
+   final static String from = "zhulinchao7@gmail.com";
+   final static String host = "smtp.gmail.com";
+   final static String username = "zhulinchao7@gmail.com";
+   final static String password = "vn@w8[v&a;A$Q~s6z0wb2=k)J";
    final static int port = 465;
 
    public static void send(String dst, String title, String content)

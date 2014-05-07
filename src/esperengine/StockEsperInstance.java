@@ -24,6 +24,7 @@ import java.sql.*;
 import java.lang.Thread;
 import esperengine.stock.*;
 import login.person.*;
+import helper.*;
 public class StockEsperInstance implements EsperInstance {
     static Log log = LogFactory.getLog(StockEsperInstance.class);
 	CrawlerScheduler crawler = null;
@@ -50,15 +51,62 @@ public class StockEsperInstance implements EsperInstance {
 		}
 	}
 	public void insertNewSub(int subId) {
+
         RuleSubscriptionDAO rsd = StockDAOFactory.getRuleSubscriptionDAOInstance();
         RuleSubscriptionVo rule = rsd.getEPLWithSubId(subId);
-        if (CepConfig.isEPLValid(rule.getEpl(), rule.getUserArgs())) {
-            cep.createEPL(rule.getEpl(), rule.getUserArgs(), rule.getSubId(), new StockListener(subId));
+        String eplStr = rule.getEpl();
+        List<Object> lo = rule.getEventArgs();
+        List<String> ls = rule.getEventIdList();
+        StockInsertEventDAO ed = StockDAOFactory.getStockInsertEventDAOInstance();
+        int i = 0;
+        StockEsperInstance sei = (StockEsperInstance)(EsperEngine.getInstance("Stock"));
+        if (lo != null) {
+            for (Object o : lo) {
+                List<String> oo = (List<String>) o;
+                String eventId = ls.get(i);
+                StockInsertEventVo s = ed.getInsertEventWithId(eventId);
+                String rep = s.getEventName() + subId + System.currentTimeMillis();
+                String eventStr = s.getEventStr();
+
+                eventStr = eventStr.replaceAll(s.getEventName(), rep);
+                eplStr = eplStr.replaceAll(s.getEventName(), rep);
+                insertNewEvent(eventStr, oo, ""+subId+i);
+                i++;
+            }
+        }
+        insertNewSubWithEvent(eplStr, subId);
+        // List<StockInsertEventVo> lsiv = sied.getAllInsertEvent();
+        // for (StockInsertEventVo stockInsert : lsiv) {
+        //     if (eplStr.indexOf(stockInsert.getEventName()) >= 0) {
+        //         String eventStr = stockInsert.getEventStr();
+        //         String rep = stockInsert.getEventName() + id + System.currentTimeMillis();
+        //         eventStr.replaceAll(stockInsert.getEventName(), rep);
+        //         eplStr = eplStr.replaceAll(stockInsert.getEventName(), rep);
+
+        //         sei.insertNewEvent(eventStr, eventArgs, rs + i);
+        //     }
+        // }
+        if (CepConfig.isEPLValid(eplStr, rule.getUserArgs())) {
+            cep.createEPL(eplStr, rule.getUserArgs(), rule.getSubId(), new StockListener(subId));
         }
     }
 
-    public void updateOldSub(int subId) {
-        cep.destroyEPL(subId);
+    public void insertNewSubWithEvent(String eplStr, int subId) {
+        RuleSubscriptionDAO rsd = StockDAOFactory.getRuleSubscriptionDAOInstance();
+        RuleSubscriptionVo rule = rsd.getEPLWithSubId(subId);
+        if (CepConfig.isEPLValid(eplStr, rule.getUserArgs())) {
+            cep.createEPL(eplStr, rule.getUserArgs(), rule.getSubId(), new StockListener(subId));
+        }
+    }
+
+    public void insertNewEvent(String eventStr, List<String> eventArgs, String eventName) {
+        if (CepConfig.isEPLValid(eventStr, eventArgs)) {
+            cep.createEventEPL(eventStr, eventArgs, eventName);
+        }
+    }
+
+    public void updateOldSub(int subId, int eventArgsCount) {
+        cep.destroyEPL(subId, eventArgsCount);
         insertNewSub(subId);
     }
 
@@ -66,10 +114,11 @@ public class StockEsperInstance implements EsperInstance {
         RuleSubscriptionDAO rsd = StockDAOFactory.getRuleSubscriptionDAOInstance();
         List<RuleSubscriptionVo> rule = rsd.getAllEPLRules();
         for (RuleSubscriptionVo str : rule) {
-            if (CepConfig.isEPLValid(str.getEpl(), str.getUserArgs())) {
-                cep.createEPL(str.getEpl(), str.getUserArgs(), str.getSubId(),
-                              new StockListener(Integer.parseInt(str.getSubId())));
-            }
+            insertNewSub(Integer.parseInt(str.getSubId()));
+            // if (CepConfig.isEPLValid(str.getEpl(), str.getUserArgs())) {
+            //     cep.createEPL(str.getEpl(), str.getUserArgs(), str.getSubId(),
+            //                   new StockListener(Integer.parseInt(str.getSubId())));
+            // }
         }
     }
     public void shutdown() {
